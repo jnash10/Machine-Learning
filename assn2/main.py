@@ -1,60 +1,55 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import Birch, DBSCAN, SpectralClustering, AgglomerativeClustering, KMeans
+from sklearn.metrics import normalized_mutual_info_score
 import numpy as np
-from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 
 
-#plotting data
-data = pd.read_csv('data.csv')
-data.columns=['x','y']
-plt.scatter(data.x, data.y)
-plt.title('visualisaiton of data')
+X = pd.read_csv('data.csv', header=None)
+
+plt.scatter(X.iloc[:,0],X.iloc[:,1])
 plt.show()
 
-
-
-#first we scale the data
+#scaling the data
 scaler = StandardScaler()
 
-data = scaler.fit_transform(data[['x','y']])
-data = pd.DataFrame(data)
+X = scaler.fit_transform(X)
+X = pd.DataFrame(X)
 
-plt.scatter(data.iloc[:,0], data.iloc[:,1])
-plt.title('visualisaiton of scaled data')
+clf = KMeans(n_clusters=2)
+labels = clf.fit(X).labels_
+plt.scatter(X.iloc[:,0],X.iloc[:,1], c=labels)
+plt.title('KMeans')
 plt.show()
 
 
-#KMEANS
-kmeans_clusters = KMeans(n_clusters=2, n_init=20, random_state=23).fit(data)
-plt.scatter(data.iloc[:,0], data.iloc[:,1], c=kmeans_clusters.labels_)
-plt.title('classification using KMEANS, n_clusters=2')
+clf = Birch(n_clusters=2, threshold = 0.3)
+labels = clf.fit(X).labels_
+plt.scatter(X.iloc[:,0],X.iloc[:,1], c=labels)
+plt.title('Birch')
 plt.show()
 
-#DBSCAN
-clusters = DBSCAN(eps=0.2, min_samples=30).fit(data)
-plt.scatter(data.iloc[:,0], data.iloc[:,1], c=clusters.labels_)
-plt.title('classification using DBSCAN (e=0.2, r=30)')
+clf = SpectralClustering(n_clusters=2)
+labels = clf.fit(X).labels_
+plt.scatter(X.iloc[:,0],X.iloc[:,1], c=labels)
+plt.title('Spectral')
 plt.show()
 
-clusters = DBSCAN(eps=0.2, min_samples=50).fit(data)
-plt.scatter(data.iloc[:,0], data.iloc[:,1], c=clusters.labels_)
-plt.title('classification using DBSCAN (e=0.1, r=40)')
+clf = AgglomerativeClustering(n_clusters=2)
+labels = clf.fit(X).labels_
+plt.scatter(X.iloc[:,0],X.iloc[:,1], c=labels)
+plt.title('Agglomerative Clustering')
+plt.show()
+
+clf = DBSCAN(eps=0.31, min_samples=80)
+labels = clf.fit(X).labels_
+plt.scatter(X.iloc[:,0],X.iloc[:,1], c=labels)
+plt.title('DBScan')
 plt.show()
 
 
-clusters = DBSCAN(eps=0.31, min_samples=80).fit(data)
-plt.scatter(data.iloc[:,0], data.iloc[:,1], c=clusters.labels_)
-plt.title('classification using DBSCAN (e=0.31, n=80)')
-unique, counts = np.unique(clusters.labels_, return_counts=True)
-#print(np.asarray((unique, counts)).T)
-plt.show()
-
-
-output = open('output.txt','w')
-
-for label in clusters.labels_:
-    output.writelines(str(label)+'\n')
-
-output.close()
+file = open('output.txt','w')
+for label in labels:
+    file.write(str(label)+'\n')
+file.close()
